@@ -1,0 +1,26 @@
+{
+  "name": "crisissync-ai",
+  "version": "1.0.0",
+  "private": true,
+  "description": "CrisisSync AI real-time emergency response orchestration prototype.",
+  "scripts": {
+    "install:all": "npm install --workspaces",
+    "dev:producer": "npm run dev --workspace backend/producer-service",
+    "dev:processing": "npm run dev --workspace backend/processing-service",
+    "dev:assignment": "npm run dev --workspace backend/assignment-service",
+    "dev:notification": "npm run dev --workspace backend/notification-service",
+    "dev:dashboard": "npm run dev --workspace frontend/dashboard",
+    "start:services": "docker compose up --build producer-service processing-service assignment-service notification-service",
+    "topics": "bash scripts/create-topics.sh"
+  },
+  "workspaces": [
+    "backend/producer-service",
+    "backend/processing-service",
+    "backend/assignment-service",
+    "backend/notification-service",
+    "frontend/dashboard"
+  ],
+  "engines": {
+    "node": ">=20"
+  }
+}

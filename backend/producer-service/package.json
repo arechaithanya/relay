@@ -1,0 +1,20 @@
+{
+  "name": "@crisissync/producer-service",
+  "version": "1.0.0",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "nodemon src/index.js",
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "kafkajs": "^2.2.4",
+    "mongodb": "^6.12.0",
+    "nanoid": "^3.3.8"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9"
+  }
+}

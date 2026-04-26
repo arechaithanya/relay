@@ -1,0 +1,111 @@
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.6.1
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+
+  kafka:
+    image: confluentinc/cp-kafka:7.6.1
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:29092,PLAINTEXT_HOST://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    healthcheck:
+      test: ["CMD", "kafka-topics", "--bootstrap-server", "localhost:29092", "--list"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  kafka-init:
+    image: confluentinc/cp-kafka:7.6.1
+    depends_on:
+      kafka:
+        condition: service_healthy
+    command: >
+      bash -c "
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic emergency-events --replication-factor 1 --partitions 3 &&
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic alerts --replication-factor 1 --partitions 3 &&
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic assignments --replication-factor 1 --partitions 3
+      "
+
+  mongo:
+    image: mongo:7
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  producer-service:
+    build:
+      context: .
+      dockerfile: backend/producer-service/Dockerfile
+    depends_on:
+      kafka-init:
+        condition: service_completed_successfully
+      mongo:
+        condition: service_started
+    environment:
+      KAFKA_BROKERS: kafka:29092
+      MONGO_URI: mongodb://mongo:27017/crisissync
+      PRODUCER_PORT: 4001
+    ports:
+      - "4001:4001"
+
+  processing-service:
+    build:
+      context: .
+      dockerfile: backend/processing-service/Dockerfile
+    depends_on:
+      kafka-init:
+        condition: service_completed_successfully
+      mongo:
+        condition: service_started
+    environment:
+      KAFKA_BROKERS: kafka:29092
+      MONGO_URI: mongodb://mongo:27017/crisissync
+
+  assignment-service:
+    build:
+      context: .
+      dockerfile: backend/assignment-service/Dockerfile
+    depends_on:
+      kafka-init:
+        condition: service_completed_successfully
+      mongo:
+        condition: service_started
+    environment:
+      KAFKA_BROKERS: kafka:29092
+      MONGO_URI: mongodb://mongo:27017/crisissync
+
+  notification-service:
+    build:
+      context: .
+      dockerfile: backend/notification-service/Dockerfile
+    depends_on:
+      kafka-init:
+        condition: service_completed_successfully
+      mongo:
+        condition: service_started
+    environment:
+      KAFKA_BROKERS: kafka:29092
+      MONGO_URI: mongodb://mongo:27017/crisissync
+      NOTIFICATION_PORT: 4004
+      FRONTEND_ORIGIN: http://localhost:5173
+    ports:
+      - "4004:4004"
+
+volumes:
+  mongo-data:
