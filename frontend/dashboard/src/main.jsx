@@ -386,13 +386,29 @@ function IncidentModal({ incident, onClose, onAcknowledge, onResolve }) {
 
   // Close on Escape key
   useEffect(() => {
-    function handler(e) { if (e.key === "Escape") onClose(); }
+    function handler(e) {
+      if (e.key === "Escape") onClose();
+    }
     document.addEventListener("keydown", handler);
     return () => document.removeEventListener("keydown", handler);
   }, [onClose]);
 
+  function handleOverlayClick(e) {
+    if (e.target === e.currentTarget) onClose();
+  }
+
+  function handleAcknowledge() {
+    onAcknowledge(incident.id);
+    onClose();
+  }
+
+  function handleResolve() {
+    onResolve(incident.id);
+    onClose();
+  }
+
   return (
-    <div className="modal-overlay" role="dialog" aria-modal="true" aria-label="Incident details" onClick={(e) => e.target === e.currentTarget && onClose()}>
+    <div className="modal-overlay" role="dialog" aria-modal="true" aria-label="Incident details" onClick={handleOverlayClick}>
       <div className="modal">
         <div className="modal-header">
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
@@ -447,11 +463,11 @@ function IncidentModal({ incident, onClose, onAcknowledge, onResolve }) {
         {!isResolved && (
           <div className="modal-footer">
             {incident.status !== "ACKNOWLEDGED" && (
-              <button type="button" className="action-btn ack-btn" onClick={() => { onAcknowledge(incident.id); onClose(); }}>
+              <button type="button" className="action-btn ack-btn" onClick={handleAcknowledge}>
                 <CheckCircle size={15} /> Acknowledge
               </button>
             )}
-            <button type="button" className="action-btn resolve-btn" onClick={() => { onResolve(incident.id); onClose(); }}>
+            <button type="button" className="action-btn resolve-btn" onClick={handleResolve}>
               <XCircle size={15} /> Resolve
             </button>
           </div>

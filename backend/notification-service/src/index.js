@@ -88,7 +88,7 @@ async function start() {
   async function shutdown(signal) {
     logger.info({ msg: `Received ${signal}, shutting down gracefully` });
     server.close(async () => {
-      await Promise.all(consumers.map((c) => c.disconnect().catch(() => {}))); 
+    await Promise.all(consumers.map((c) => c.disconnect().catch(() => {})));
       await closeDatabase().catch(() => {});
       logger.info({ msg: "Notification service shutdown complete" });
       process.exit(0);

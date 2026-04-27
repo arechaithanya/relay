@@ -97,10 +97,7 @@ app.patch("/incidents/:id/acknowledge", async (req, res, next) => {
   try {
     const db = await connectDatabase();
     const result = await db.collection("incidents").findOneAndUpdate(
-      { id: req.params.id, status: { $nin: ["RESOLVED"] } },
-      {
-        $set: {
-          status: "ACKNOWLEDGED",
+      { id: req.params.id, status: { $ne: "RESOLVED" } },
           acknowledgedAt: Date.now(),
           updatedAt: Date.now()
         }
@@ -125,7 +122,7 @@ app.patch("/incidents/:id/resolve", async (req, res, next) => {
   try {
     const db = await connectDatabase();
     const result = await db.collection("incidents").findOneAndUpdate(
-      { id: req.params.id, status: { $nin: ["RESOLVED"] } },
+      { id: req.params.id, status: { $ne: "RESOLVED" } },
       {
         $set: {
           status: "RESOLVED",
