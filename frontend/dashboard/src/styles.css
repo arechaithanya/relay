@@ -245,30 +245,144 @@ button:disabled {
 .floorplan {
   aspect-ratio: 16 / 11;
   background:
-    linear-gradient(90deg, rgba(30, 58, 54, 0.07) 1px, transparent 1px),
-    linear-gradient(rgba(30, 58, 54, 0.07) 1px, transparent 1px),
-    #f8faf9;
-  background-size: 10% 10%;
-  border: 1px solid #d7dfdd;
+    linear-gradient(90deg, rgba(30, 74, 112, 0.07) 1px, transparent 1px),
+    linear-gradient(rgba(30, 74, 112, 0.07) 1px, transparent 1px),
+    #f7fbff;
+  background-size: 24px 24px;
+  border: 2px solid #8fb0c7;
   border-radius: 8px;
   overflow: hidden;
   position: relative;
 }
 
-.floor-grid {
-  border: 2px solid #8aa19a;
-  inset: 28px;
+.floorplan::before {
+  border: 4px solid #1d5478;
+  border-radius: 4px;
+  content: "";
+  inset: 34px 24px 22px;
   position: absolute;
+  z-index: 1;
 }
 
-.zone-label {
-  color: #40524f;
-  font-size: 0.72rem;
-  font-weight: 700;
-  max-width: 92px;
+.blueprint-title {
+  align-items: baseline;
+  color: #174a6a;
+  display: flex;
+  gap: 10px;
+  left: 18px;
   position: absolute;
-  transform: translate(-50%, -180%);
+  right: 18px;
+  top: 10px;
+  z-index: 5;
+}
+
+.blueprint-title strong {
+  font-size: 0.78rem;
+}
+
+.blueprint-title span {
+  color: #587284;
+  font-size: 0.68rem;
+}
+
+.corridor {
+  background:
+    repeating-linear-gradient(
+      45deg,
+      rgba(28, 83, 117, 0.06),
+      rgba(28, 83, 117, 0.06) 6px,
+      rgba(255, 255, 255, 0.78) 6px,
+      rgba(255, 255, 255, 0.78) 14px
+    );
+  border: 1px dashed rgba(29, 84, 120, 0.28);
+  position: absolute;
+  z-index: 0;
+}
+
+.corridor-main {
+  height: 13%;
+  left: 8%;
+  top: 46%;
+  width: 84%;
+}
+
+.corridor-vertical {
+  height: 52%;
+  left: 55%;
+  top: 22%;
+  width: 6%;
+}
+
+.corridor-lobby {
+  height: 16%;
+  left: 12%;
+  top: 72%;
+  width: 68%;
+}
+
+.hotel-room {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.86);
+  border: 3px solid #1d5478;
+  border-radius: 2px;
+  color: #153c54;
+  display: flex;
+  font-weight: 700;
+  justify-content: center;
+  min-height: 30px;
+  padding: 4px;
+  position: absolute;
   text-align: center;
+  z-index: 2;
+}
+
+.hotel-room span {
+  font-size: clamp(0.55rem, 1vw, 0.76rem);
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+}
+
+.hotel-room.public {
+  background: rgba(234, 246, 255, 0.92);
+}
+
+.hotel-room.service {
+  background: rgba(241, 244, 247, 0.96);
+}
+
+.hotel-room.meeting,
+.hotel-room.event {
+  background: rgba(255, 249, 233, 0.95);
+}
+
+.hotel-room.amenity {
+  background: rgba(231, 248, 242, 0.95);
+}
+
+.hotel-room.parking {
+  background: rgba(235, 237, 240, 0.96);
+}
+
+.floor-door {
+  background: #f7fbff;
+  border-bottom: 2px solid #1d5478;
+  border-left: 2px solid #1d5478;
+  border-radius: 0 0 0 18px;
+  display: block;
+  height: 18px;
+  position: absolute;
+  width: 18px;
+  z-index: 4;
+}
+
+.floor-door::after {
+  background: #f7fbff;
+  content: "";
+  height: 6px;
+  left: 2px;
+  position: absolute;
+  top: 14px;
+  width: 22px;
 }
 
 .incident-marker,
@@ -277,6 +391,7 @@ button:disabled {
   display: block;
   position: absolute;
   transform: translate(-50%, -50%);
+  z-index: 6;
 }
 
 .incident-marker {
@@ -300,6 +415,7 @@ button:disabled {
 .staff-marker {
   background: #155ca8;
   border: 2px solid #fff;
+  box-shadow: 0 0 0 1px rgba(21, 92, 168, 0.32);
   height: 13px;
   width: 13px;
 }

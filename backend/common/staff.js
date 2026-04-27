@@ -5,7 +5,7 @@ const staff = [
     role: "FIRE_WARDEN",
     status: "AVAILABLE",
     location: "Lobby",
-    coordinates: { x: 12, y: 18 }
+    coordinates: { x: 20, y: 73 }
   },
   {
     id: "stf-102",
@@ -13,7 +13,7 @@ const staff = [
     role: "MEDICAL",
     status: "AVAILABLE",
     location: "Pool Deck",
-    coordinates: { x: 70, y: 58 }
+    coordinates: { x: 78, y: 78 }
   },
   {
     id: "stf-103",
@@ -21,7 +21,7 @@ const staff = [
     role: "SECURITY",
     status: "AVAILABLE",
     location: "North Entrance",
-    coordinates: { x: 22, y: 76 }
+    coordinates: { x: 8, y: 73 }
   },
   {
     id: "stf-104",
@@ -29,7 +29,7 @@ const staff = [
     role: "FACILITIES",
     status: "AVAILABLE",
     location: "Service Corridor",
-    coordinates: { x: 55, y: 30 }
+    coordinates: { x: 83, y: 49 }
   },
   {
     id: "stf-105",
@@ -37,21 +37,27 @@ const staff = [
     role: "SECURITY",
     status: "BUSY",
     location: "Ballroom",
-    coordinates: { x: 84, y: 22 }
+    coordinates: { x: 73, y: 28 }
   }
 ];
 
 const locationCoordinates = {
-  Lobby: { x: 15, y: 20 },
-  "Kitchen": { x: 82, y: 16 },
-  "Ballroom": { x: 78, y: 30 },
-  "Pool Deck": { x: 70, y: 60 },
-  "North Entrance": { x: 20, y: 78 },
-  "Conference Wing": { x: 40, y: 42 },
-  "Guest Floor 3": { x: 34, y: 12 },
-  "Guest Floor 7": { x: 58, y: 12 },
-  "Service Corridor": { x: 54, y: 32 },
-  "Parking Garage": { x: 14, y: 88 }
+  Lobby: { x: 20, y: 73 },
+  Reception: { x: 18, y: 53 },
+  "North Entrance": { x: 8, y: 73 },
+  Kitchen: { x: 89, y: 27 },
+  Ballroom: { x: 73, y: 28 },
+  "Pool Deck": { x: 78, y: 78 },
+  "Conference Wing": { x: 39, y: 32 },
+  "Guest Floor 3": { x: 31, y: 13 },
+  "Guest Floor 7": { x: 55, y: 13 },
+  "Room 301": { x: 17, y: 14 },
+  "Room 302": { x: 31, y: 14 },
+  "Room 303": { x: 45, y: 14 },
+  "Room 304": { x: 59, y: 14 },
+  "Room 305": { x: 73, y: 14 },
+  "Service Corridor": { x: 83, y: 49 },
+  "Parking Garage": { x: 35, y: 91 }
 };
 
 function distance(a, b) {
