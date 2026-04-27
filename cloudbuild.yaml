@@ -1,0 +1,86 @@
+substitutions:
+  _REGION: us-central1
+  _CLUSTER: crisissync-cluster
+  _NAMESPACE: crisissync
+  _REPOSITORY: crisissync
+
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -t
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/producer-service:$SHORT_SHA
+      - -f
+      - backend/producer-service/Dockerfile
+      - .
+
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -t
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/processing-service:$SHORT_SHA
+      - -f
+      - backend/processing-service/Dockerfile
+      - .
+
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -t
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/assignment-service:$SHORT_SHA
+      - -f
+      - backend/assignment-service/Dockerfile
+      - .
+
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -t
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/notification-service:$SHORT_SHA
+      - -f
+      - backend/notification-service/Dockerfile
+      - .
+
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - --all-tags
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/producer-service
+
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - --all-tags
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/processing-service
+
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - --all-tags
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/assignment-service
+
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - --all-tags
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/notification-service
+
+  - name: gcr.io/cloud-builders/gcloud
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        gcloud container clusters get-credentials "$_CLUSTER" --region "$_REGION"
+        kubectl create namespace "$_NAMESPACE" --dry-run=client -o yaml | kubectl apply -f -
+        sed \
+          -e "s|PROJECT_ID|$PROJECT_ID|g" \
+          -e "s|REGION|$_REGION|g" \
+          -e "s|REPOSITORY|$_REPOSITORY|g" \
+          -e "s|IMAGE_TAG|$SHORT_SHA|g" \
+          deploy/gke/*.yaml | kubectl apply -n "$_NAMESPACE" -f -
+
+images:
+  - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/producer-service:$SHORT_SHA
+  - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/processing-service:$SHORT_SHA
+  - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/assignment-service:$SHORT_SHA
+  - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/notification-service:$SHORT_SHA

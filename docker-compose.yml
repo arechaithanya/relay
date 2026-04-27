@@ -76,6 +76,8 @@ services:
     environment:
       KAFKA_BROKERS: kafka:29092
       MONGO_URI: mongodb://mongo:27017/crisissync
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-1.5-flash}
 
   assignment-service:
     build:

@@ -4,6 +4,7 @@ const { connectDatabase } = require("../../common/database");
 const { createConsumer, createProducer, parseMessage, publishJson } = require("../../common/kafka");
 const { classifyIncident, escalationSeverity } = require("../../common/rules");
 const topics = require("../../common/topics");
+const { enrichIncidentWithGemini } = require("./gemini");
 
 const escalationTimers = new Map();
 let db;
@@ -35,14 +36,22 @@ async function writeTimeline(incidentId, stage, details) {
 
 async function processEmergencyEvent(event) {
   const decision = classifyIncident(event);
+  const ai = await enrichIncidentWithGemini(event, decision);
+  const aiSeverity = Number.isFinite(ai.severity)
+    ? Math.max(1, Math.min(5, Number(ai.severity)))
+    : undefined;
+  const severity = Number.isFinite(event.severity) ? decision.severity : aiSeverity || decision.severity;
+  const priority = severity >= 4 ? "HIGH" : severity === 3 ? "MEDIUM" : "LOW";
+
   const incident = {
     id: event.id,
     type: decision.type,
     location: event.location,
-    severity: decision.severity,
-    priority: decision.priority,
+    severity,
+    priority,
     workflow: decision.workflow,
-    summary: decision.summary,
+    summary: ai.summary || decision.summary,
+    ai,
     requiredRoles: decision.requiredRoles,
     status: "OPEN",
     createdAt: event.timestamp || Date.now(),
@@ -58,7 +67,8 @@ async function processEmergencyEvent(event) {
   );
   await writeTimeline(incident.id, "CLASSIFIED", {
     severity: incident.severity,
-    workflow: incident.workflow
+    workflow: incident.workflow,
+    aiProvider: incident.ai.provider
   });
 
   const alert = alertPayload(incident);
