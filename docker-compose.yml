@@ -38,7 +38,8 @@ services:
       bash -c "
       kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic emergency-events --replication-factor 1 --partitions 3 &&
       kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic alerts --replication-factor 1 --partitions 3 &&
-      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic assignments --replication-factor 1 --partitions 3
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic assignments --replication-factor 1 --partitions 3 &&
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic incidents-dlq --replication-factor 1 --partitions 1
       "
 
   mongo:

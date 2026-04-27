@@ -4,11 +4,14 @@ const cors = require("cors");
 const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
-const { connectDatabase } = require("../../common/database");
+const { connectDatabase, closeDatabase } = require("../../common/database");
 const { frontendOrigin } = require("../../common/config");
 const { createConsumer, parseMessage } = require("../../common/kafka");
+const logger = require("../../common/logger");
 const { staff } = require("../../common/staff");
 const topics = require("../../common/topics");
+
+process.env.SERVICE_NAME = "notification-service";
 
 const port = Number(process.env.NOTIFICATION_PORT || 4004);
 const app = express();
@@ -21,7 +24,9 @@ const io = new Server(server, {
 });
 
 let db;
+let startedAt;
 const recentEvents = [];
+const consumers = [];
 
 app.use(cors({ origin: frontendOrigin }));
 
@@ -45,16 +50,27 @@ io.on("connection", async (socket) => {
   socket.emit("snapshot", await snapshot());
 });
 
+app.get("/health", (_req, res) => {
+  res.json({
+    status: "ok",
+    service: "notification-service",
+    uptime: process.uptime(),
+    startedAt,
+    connectedClients: io.engine.clientsCount
+  });
+});
+
 async function startConsumer(topic, groupId, eventName) {
   const consumer = await createConsumer(`notification-${topic}`, groupId);
   await consumer.subscribe({ topic, fromBeginning: false });
   await consumer.run({
     eachMessage: async ({ message }) => {
       const payload = parseMessage(message);
-      console.log(`[notify:${topic}]`, payload.kind || payload.type, payload.incidentId || payload.id);
+      logger.info({ msg: `Notify ${topic}`, kind: payload.kind || payload.type, incidentId: payload.incidentId || payload.id });
       await broadcast(eventName, payload);
     }
   });
+  consumers.push(consumer);
 }
 
 async function start() {
@@ -64,12 +80,26 @@ async function start() {
     startConsumer(topics.ASSIGNMENTS, "notification-assignments-group", "assignment")
   ]);
 
+  startedAt = Date.now();
   server.listen(port, () => {
-    console.log(`Notification service listening on ${port}`);
+    logger.info({ msg: `Notification service listening on ${port}` });
   });
+
+  async function shutdown(signal) {
+    logger.info({ msg: `Received ${signal}, shutting down gracefully` });
+    server.close(async () => {
+      await Promise.all(consumers.map((c) => c.disconnect().catch(() => {}))); 
+      await closeDatabase().catch(() => {});
+      logger.info({ msg: "Notification service shutdown complete" });
+      process.exit(0);
+    });
+  }
+
+  process.on("SIGTERM", () => shutdown("SIGTERM"));
+  process.on("SIGINT", () => shutdown("SIGINT"));
 }
 
 start().catch((error) => {
-  console.error("Notification service failed", error);
+  logger.error({ msg: "Notification service failed", error: error.message });
   process.exit(1);
 });

@@ -11,7 +11,8 @@
     "dev:notification": "npm run dev --workspace backend/notification-service",
     "dev:dashboard": "npm run dev --workspace frontend/dashboard",
     "start:services": "docker compose up --build producer-service processing-service assignment-service notification-service",
-    "topics": "bash scripts/create-topics.sh"
+    "topics": "bash scripts/create-topics.sh",
+    "test": "jest --testPathPattern=backend/common/__tests__"
   },
   "workspaces": [
     "backend/producer-service",
@@ -22,5 +23,8 @@
   ],
   "engines": {
     "node": ">=20"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
   }
 }

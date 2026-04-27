@@ -1,12 +1,16 @@
 require("dotenv").config({ path: "../../.env" });
 
-const { connectDatabase } = require("../../common/database");
+const { connectDatabase, closeDatabase } = require("../../common/database");
 const { createConsumer, createProducer, parseMessage, publishJson } = require("../../common/kafka");
 const { coordinatesForLocation, distance, staff } = require("../../common/staff");
+const logger = require("../../common/logger");
 const topics = require("../../common/topics");
+
+process.env.SERVICE_NAME = "assignment-service";
 
 let db;
 let producer;
+let consumer;
 const staffState = new Map(staff.map((member) => [member.id, { ...member }]));
 
 function selectNearestStaff(request) {
@@ -76,23 +80,47 @@ async function handleAssignmentRequest(request) {
   );
 
   await publishJson(producer, topics.ASSIGNMENTS, assignment, request.incidentId);
+  logger.info({ msg: assignment.message, incidentId: request.incidentId, assignee: assignee?.id });
 }
 
 async function start() {
   db = await connectDatabase();
   producer = await createProducer("assignment-service-producer");
-  const consumer = await createConsumer("assignment-service", "assignment-service-group");
+  consumer = await createConsumer("assignment-service", "assignment-service-group");
   await consumer.subscribe({ topic: topics.ASSIGNMENTS, fromBeginning: false });
   await consumer.run({
     eachMessage: async ({ message }) => {
-      await handleAssignmentRequest(parseMessage(message));
+      const raw = parseMessage(message);
+      try {
+        await handleAssignmentRequest(raw);
+      } catch (error) {
+        logger.error({ msg: "Failed to handle assignment, routing to DLQ", incidentId: raw.incidentId, error: error.message });
+        await publishJson(producer, topics.DLQ, {
+          originalTopic: topics.ASSIGNMENTS,
+          payload: raw,
+          error: error.message,
+          failedAt: Date.now()
+        }, raw.incidentId).catch((dlqErr) => logger.error({ msg: "DLQ publish failed", error: dlqErr.message }));
+      }
     }
   });
 
-  console.log("Assignment service consuming assignments");
+  logger.info({ msg: "Assignment service consuming assignments" });
+
+  async function shutdown(signal) {
+    logger.info({ msg: `Received ${signal}, shutting down gracefully` });
+    await consumer.disconnect().catch(() => {});
+    await producer.disconnect().catch(() => {});
+    await closeDatabase().catch(() => {});
+    logger.info({ msg: "Assignment service shutdown complete" });
+    process.exit(0);
+  }
+
+  process.on("SIGTERM", () => shutdown("SIGTERM"));
+  process.on("SIGINT", () => shutdown("SIGINT"));
 }
 
 start().catch((error) => {
-  console.error("Assignment service failed", error);
+  logger.error({ msg: "Assignment service failed", error: error.message });
   process.exit(1);
 });

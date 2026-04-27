@@ -1,5 +1,6 @@
 module.exports = {
   EMERGENCY_EVENTS: "emergency-events",
   ALERTS: "alerts",
-  ASSIGNMENTS: "assignments"
+  ASSIGNMENTS: "assignments",
+  DLQ: "incidents-dlq"
 };
