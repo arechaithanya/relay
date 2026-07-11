@@ -1,7 +1,7 @@
 const staff = [
   {
     id: "stf-101",
-    name: "Avery Chen",
+    name: "Fire man",
     role: "FIRE_WARDEN",
     status: "AVAILABLE",
     location: "Lobby",
@@ -9,7 +9,7 @@ const staff = [
   },
   {
     id: "stf-102",
-    name: "Maya Patel",
+    name: "Doctor",
     role: "MEDICAL",
     status: "AVAILABLE",
     location: "Pool Deck",
@@ -17,7 +17,7 @@ const staff = [
   },
   {
     id: "stf-103",
-    name: "Noah Williams",
+    name: "Security",
     role: "SECURITY",
     status: "AVAILABLE",
     location: "North Entrance",
@@ -25,7 +25,7 @@ const staff = [
   },
   {
     id: "stf-104",
-    name: "Sam Rivera",
+    name: "Incharge",
     role: "FACILITIES",
     status: "AVAILABLE",
     location: "Service Corridor",
@@ -33,7 +33,7 @@ const staff = [
   },
   {
     id: "stf-105",
-    name: "Elena Moore",
+    name: "Incharge",
     role: "SECURITY",
     status: "BUSY",
     location: "Ballroom",
